@@ -18,19 +18,3 @@ View your app in AI Studio: https://ai.studio/apps/88d91845-56d8-4cd0-9186-df624
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
-
-## Deploy to GitHub Pages
-
-This project is configured to publish as a GitHub Pages project site at `https://r-karra.github.io/ketAI/`.
-
-### GitHub Actions deployment
-
-A workflow is included at `.github/workflows/deploy.yml`.
-
-The workflow runs on pushes to `main`, builds the app, and deploys the generated `dist/` output to the `gh-pages` branch.
-
-### GitHub Pages settings
-
-If you use the actions workflow, configure Pages as follows:
-- Source: `gh-pages` branch
-- Folder: `/ (root)`
