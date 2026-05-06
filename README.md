@@ -24,11 +24,18 @@ View your app in AI Studio: https://ai.studio/apps/88d91845-56d8-4cd0-9186-df624
 This project is configured to publish as a GitHub Pages project site at `https://r-karra.github.io/ketAI/`.
 
 1. Build the static site:
-   `npm install && npm run build:docs`
-2. Commit the generated `docs/` folder to `main`:
-   `git add docs && git commit -m "Build docs for GitHub Pages"`
-3. Push the branch and configure Pages:
-   - GitHub Pages source: `main` branch
-   - Folder: `/docs`
+   `npm install && npm run build`
+2. Create a `gh-pages` branch and publish the build output manually:
+   - `git checkout --orphan gh-pages`
+   - `git rm -rf .`
+   - copy `dist/` contents into the branch root
+   - `touch .nojekyll`
+   - `git add .`
+   - `git commit -m "Deploy site to GitHub Pages"`
+   - `git push origin gh-pages --force`
+   - `git checkout main`
+3. In GitHub Pages settings:
+   - Source: `gh-pages` branch
+   - Folder: `/ (root)`
 
-If you prefer to publish from a separate branch, build with `npm run build` and deploy the generated `dist/` output to `gh-pages` using your own manual process.
+This keeps deployment manual and uses the generated `dist/` static site output.

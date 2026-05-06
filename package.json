@@ -7,9 +7,8 @@
     "start": "tsx server.ts",
     "dev": "tsx server.ts",
     "build": "vite build",
-    "build:docs": "vite build --outDir docs && touch docs/.nojekyll",
     "preview": "vite preview",
-    "clean": "rm -rf dist docs",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
