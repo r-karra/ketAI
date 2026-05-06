@@ -12,6 +12,8 @@ export interface Project {
   paperUrl: string;
   projectUrl: string;
   tags: string[];
+  category?: string;
+  subCategory?: string;
 }
 
 export type OperationType = 'create' | 'update' | 'delete' | 'list' | 'get' | 'write';

@@ -8,10 +8,20 @@ import { motion } from "motion/react";
 import { Github, FileText, ExternalLink, Hash } from "lucide-react";
 import { Project } from "../types";
 
+const CATEGORIES = {
+  "Quantum AI": ["Optimization", "QLLMs", "PDEs", "QML", "Hamiltonian", "Others"],
+  "Large sequential Models": ["paLM", "Quantum Particle transformer(Q-ParT)", "Others"],
+  "Android": ["Apps", "Others"],
+  "Other Works": ["Others"]
+};
+
 export default function StrangeWorks() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("Quantum AI");
+  const [activeSubCategory, setActiveSubCategory] = useState("Optimization");
+
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -19,7 +29,9 @@ export default function StrangeWorks() {
     githubUrl: "https://github.com/r-karra",
     paperUrl: "#",
     projectUrl: "#",
-    tags: ""
+    tags: "",
+    category: "Quantum AI",
+    subCategory: "Optimization"
   });
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -133,7 +145,9 @@ export default function StrangeWorks() {
         githubUrl: newProject.githubUrl,
         paperUrl: newProject.paperUrl,
         projectUrl: newProject.projectUrl,
-        tags: newProject.tags.split(",").filter(t => t.trim() !== "").map(t => t.trim())
+        tags: newProject.tags.split(",").filter(t => t.trim() !== "").map(t => t.trim()),
+        category: newProject.category,
+        subCategory: newProject.subCategory
       };
 
       const response = await fetch("/api/projects", {
@@ -163,7 +177,9 @@ export default function StrangeWorks() {
           githubUrl: "https://github.com/r-karra",
           paperUrl: "#",
           projectUrl: "#",
-          tags: ""
+          tags: "",
+          category: "Quantum AI",
+          subCategory: "Optimization"
         });
         await fetchProjects();
       } else {
@@ -322,6 +338,31 @@ export default function StrangeWorks() {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Category</label>
+                    <select 
+                      className="w-full bg-white border border-neutral-200 p-4 text-sm focus:outline-none focus:border-neutral-900 transition-all font-medium"
+                      value={newProject.category}
+                      onChange={e => {
+                        const newCat = e.target.value as keyof typeof CATEGORIES;
+                        setNewProject({...newProject, category: newCat, subCategory: CATEGORIES[newCat][0]});
+                      }}
+                    >
+                      {Object.keys(CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Sub Category</label>
+                    <select 
+                      className="w-full bg-white border border-neutral-200 p-4 text-sm focus:outline-none focus:border-neutral-900 transition-all font-medium"
+                      value={newProject.subCategory}
+                      onChange={e => setNewProject({...newProject, subCategory: e.target.value})}
+                    >
+                      {(CATEGORIES[newProject.category as keyof typeof CATEGORIES] || ["Others"]).map(sc => <option key={sc} value={sc}>{sc}</option>)}
+                    </select>
+                  </div>
+                </div>
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Tags (comma separated)</label>
                   <input 
@@ -343,70 +384,159 @@ export default function StrangeWorks() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-24 gap-x-12">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.8 }}
-              className="group flex flex-col"
-            >
-              <div className="aspect-[16/10] bg-neutral-100 overflow-hidden mb-8 border border-neutral-100">
-                <img 
-                  src={project.imageUrl} 
-                  alt={project.title}
-                  className="w-full h-full object-cover grayscale brightness-110 group-hover:scale-105 transition-transform duration-1000 ease-out"
-                  referrerPolicy="no-referrer"
-                />
+        {/* Tab Navigation */}
+        <div className="mb-16 border-b border-neutral-200">
+          <div className="flex gap-8 overflow-x-auto pb-4 no-scrollbar">
+            {Object.keys(CATEGORIES).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setActiveSubCategory(CATEGORIES[cat as keyof typeof CATEGORIES][0]);
+                }}
+                className={`text-[12px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeCategory === cat ? 'text-neutral-900 border-b-2 border-neutral-900 pb-2' : 'text-neutral-400 hover:text-neutral-600'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {CATEGORIES[activeCategory as keyof typeof CATEGORIES]?.length > 1 && (
+          <div className="mb-16 flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+            {CATEGORIES[activeCategory as keyof typeof CATEGORIES].map((sub) => (
+              <button
+                key={sub}
+                onClick={() => setActiveSubCategory(sub)}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${activeSubCategory === sub ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-transparent text-neutral-500 border-neutral-200 hover:border-neutral-400'}`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {(() => {
+          const catDescMap: any = {
+            "Quantum AI": "Optimization, QLLMs, PDEs, QML, Hamiltonian and others that quantum computing can solve.",
+            "Large sequential Models": "paLM, Quantum Particle transformer(Q-ParT) and others that can be dealt with LSMs.",
+            "Android": "Innovative apps to access and integrate my research for user accessible AI for human and scientific discovery."
+          };
+          const categoryDesc = catDescMap[activeCategory];
+
+          // Auto-classify old projects if needed
+          const classifiedProjects = projects.map(project => {
+            let cat = project.category;
+            let subCat = project.subCategory;
+
+            if (!cat || cat === 'Other Works') { 
+              const textLower = `${project.title} ${project.description} ${(project.tags || []).join(" ")}`.toLowerCase();
+              if (textLower.includes("android") || textLower.includes("app ") || textLower.includes("mobile")) {
+                cat = "Android";
+                subCat = "Apps";
+              } else if (textLower.includes("palm") || textLower.includes("q-part") || textLower.includes("large sequential") || textLower.includes("lsm") || textLower.includes("llm") || textLower.includes("transformer") || textLower.includes("deep learning") || textLower.includes("graph learner") || textLower.includes("neural-symbolic")) {
+                cat = "Large sequential Models";
+                if (textLower.includes("palm")) subCat = "paLM";
+                else if (textLower.includes("part")) subCat = "Quantum Particle transformer(Q-ParT)";
+                else subCat = "Others";
+              } else if (textLower.includes("quantum") || textLower.includes("optimization") || textLower.includes("pde") || textLower.includes("hamiltonian") || textLower.includes("qubit") || textLower.includes("qllm") || textLower.includes("qml")) {
+                cat = "Quantum AI";
+                if (textLower.includes("optim")) subCat = "Optimization";
+                else if (textLower.includes("qllm")) subCat = "QLLMs";
+                else if (textLower.includes("pde")) subCat = "PDEs";
+                else if (textLower.includes("qml")) subCat = "QML";
+                else if (textLower.includes("hamil")) subCat = "Hamiltonian";
+                else subCat = "Others";
+              } else {
+                cat = "Other Works";
+                subCat = "Others";
+              }
+            }
+            return { ...project, category: cat, subCategory: subCat };
+          });
+
+          const catProjects = classifiedProjects.filter(p => p.category === activeCategory && p.subCategory === activeSubCategory);
+
+          return (
+            <div className="mb-32">
+              <div className="mb-16 pb-4">
+                <h2 className="text-3xl lg:text-4xl font-black text-neutral-900 tracking-tighter uppercase italic">{activeSubCategory}</h2>
+                {categoryDesc && <p className="text-neutral-500 mt-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest leading-relaxed max-w-4xl">{categoryDesc}</p>}
               </div>
-              
-              <div className="flex justify-between items-start mb-6">
-                <h3 className="text-3xl font-black tracking-tight text-neutral-900 leading-none">
-                  {project.title}
-                </h3>
-                <div className="flex gap-2 shrink-0">
-                  {project.tags.slice(0, 2).map(tag => (
-                    <span key={tag} className="px-2 py-1 bg-neutral-900 text-[9px] font-black uppercase text-white tracking-widest leading-none">
-                      {tag}
-                    </span>
+
+              {catProjects.length === 0 ? (
+                <div className="py-20 text-center text-neutral-400 font-bold uppercase tracking-widest text-xs border border-dashed border-neutral-200">
+                  No projects committed to this archive yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-24 gap-x-12">
+                  {catProjects.map((project, index) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, y: 40 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.8 }}
+                      className="group flex flex-col"
+                    >
+                      <div className="aspect-[16/10] bg-neutral-100 overflow-hidden mb-8 border border-neutral-100">
+                        <img 
+                          src={project.imageUrl} 
+                          alt={project.title}
+                          className="w-full h-full object-cover grayscale brightness-110 group-hover:scale-105 transition-transform duration-1000 ease-out"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      
+                      <div className="flex justify-between items-start mb-6">
+                        <h3 className="text-3xl font-black tracking-tight text-neutral-900 leading-none">
+                          {project.title}
+                        </h3>
+                        <div className="flex gap-2 shrink-0 flex-wrap justify-end max-w-[50%]">
+                          {(project.tags || []).slice(0, 2).map(tag => (
+                            <span key={tag} className="px-2 py-1 bg-neutral-900 text-[9px] font-black uppercase text-white tracking-widest leading-none">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="text-neutral-500 text-base leading-relaxed mb-10 font-medium line-clamp-3">
+                        {project.description}
+                      </p>
+
+                      <div className="mt-auto flex gap-8 items-center border-t border-neutral-100 pt-8">
+                        <a 
+                          href={project.githubUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
+                        >
+                          REPO
+                        </a>
+                        <a 
+                          href={project.paperUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
+                        >
+                          PAPER
+                        </a>
+                        <a 
+                          href={project.projectUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
+                        >
+                          DEPLOY
+                        </a>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
-
-              <p className="text-neutral-500 text-base leading-relaxed mb-10 font-medium line-clamp-3">
-                {project.description}
-              </p>
-
-              <div className="mt-auto flex gap-8 items-center border-t border-neutral-100 pt-8">
-                <a 
-                  href={project.githubUrl} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
-                >
-                   REPO
-                </a>
-                <a 
-                  href={project.paperUrl} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                   className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
-                >
-                   PAPER
-                </a>
-                <a 
-                  href={project.projectUrl} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                   className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors flex items-center gap-2"
-                >
-                   DEPLOY
-                </a>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

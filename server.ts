@@ -44,9 +44,14 @@ async function startServer() {
           githubUrl TEXT,
           paperUrl TEXT,
           projectUrl TEXT,
-          tags TEXT
+          tags TEXT,
+          category TEXT,
+          subCategory TEXT
         )
       `;
+      // Try to add columns if they don't exist
+      try { await sql`ALTER TABLE projects ADD COLUMN category TEXT`; } catch (e) {}
+      try { await sql`ALTER TABLE projects ADD COLUMN subCategory TEXT`; } catch (e) {}
       console.log("[STORAGE] Neon Postgres connected and projects table verified.");
     } catch (err: any) {
       console.error("[STORAGE] Neon connection/initialization failed:", err.message);
@@ -70,9 +75,13 @@ async function startServer() {
         githubUrl TEXT,
         paperUrl TEXT,
         projectUrl TEXT,
-        tags TEXT
+        tags TEXT,
+        category TEXT,
+        subCategory TEXT
       )
     `);
+    try { await sqliteDb.exec("ALTER TABLE projects ADD COLUMN category TEXT"); } catch (e) {}
+    try { await sqliteDb.exec("ALTER TABLE projects ADD COLUMN subCategory TEXT"); } catch (e) {}
     console.log("[STORAGE] SQLite ready.");
   }
 
@@ -126,11 +135,11 @@ async function startServer() {
 
     for (const p of seedProjects) {
       if (usePostgres) {
-        await sql`INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags) VALUES (${p.title}, ${p.description}, ${p.imageUrl}, ${p.githubUrl}, ${p.paperUrl}, ${p.projectUrl}, ${p.tags})`;
+        await sql`INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags, category, subCategory) VALUES (${p.title}, ${p.description}, ${p.imageUrl}, ${p.githubUrl}, ${p.paperUrl}, ${p.projectUrl}, ${p.tags}, 'Other Works', 'Others')`;
       } else {
         await sqliteDb.run(
-          "INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [p.title, p.description, p.imageUrl, p.githubUrl, p.paperUrl, p.projectUrl, p.tags]
+          "INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags, category, subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [p.title, p.description, p.imageUrl, p.githubUrl, p.paperUrl, p.projectUrl, p.tags, 'Other Works', 'Others']
         );
       }
     }
@@ -184,14 +193,14 @@ async function startServer() {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const { title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags } = req.body;
+      const { title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags, category, subCategory } = req.body;
       const tagsStr = Array.isArray(tags) ? tags.join(",") : tags;
       
       if (usePostgres) {
         console.log("[API/projects] Writing to Neon...");
         const result = await sql`
-          INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags) 
-          VALUES (${title}, ${description}, ${imageUrl}, ${githubUrl}, ${paperUrl}, ${projectUrl}, ${tagsStr})
+          INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags, category, subCategory) 
+          VALUES (${title}, ${description}, ${imageUrl}, ${githubUrl}, ${paperUrl}, ${projectUrl}, ${tagsStr}, ${category || 'Other Works'}, ${subCategory || 'Others'})
           RETURNING id
         `;
         console.log(`[API/projects] Success (Neon). New ID: ${result[0].id}`);
@@ -199,8 +208,8 @@ async function startServer() {
       } else {
         console.log("[API/projects] Writing to SQLite...");
         const result = await sqliteDb.run(
-          "INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [title, description, imageUrl, githubUrl, paperUrl, projectUrl, tagsStr]
+          "INSERT INTO projects (title, description, imageUrl, githubUrl, paperUrl, projectUrl, tags, category, subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [title, description, imageUrl, githubUrl, paperUrl, projectUrl, tagsStr, category || 'Other Works', subCategory || 'Others']
         );
         console.log(`[API/projects] Success (SQLite). New ID: ${result.lastID}`);
         res.status(201).json({ id: result.lastID });
