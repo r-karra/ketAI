@@ -14,6 +14,9 @@ export interface Project {
   tags: string[];
   category?: string;
   subCategory?: string;
+  fileNumber?: string;
+  dataUrl?: string;
+  docUrl?: string;
 }
 
 export type OperationType = 'create' | 'update' | 'delete' | 'list' | 'get' | 'write';

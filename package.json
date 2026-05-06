@@ -3,14 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://r-karra.github.io/ketAI/",
   "scripts": {
     "start": "tsx server.ts",
     "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "npm run build",
-    "clean": "rm -rf dist docs",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
