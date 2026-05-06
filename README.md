@@ -23,20 +23,14 @@ View your app in AI Studio: https://ai.studio/apps/88d91845-56d8-4cd0-9186-df624
 
 This project is configured to publish as a GitHub Pages project site at `https://r-karra.github.io/ketAI/`.
 
-1. Build and deploy manually:
-   - `npm install`
-   - `npm run deploy`
+### GitHub Actions deployment
 
-The deploy script will:
-- build the app into `dist/`
-- switch to an orphan `gh-pages` branch
-- copy `dist/` contents into the branch root
-- create `.nojekyll`
-- commit and force-push to `gh-pages`
-- switch back to `main`
+A workflow is included at `.github/workflows/deploy.yml`.
 
-2. In GitHub Pages settings:
-   - Source: `gh-pages` branch
-   - Folder: `/ (root)`
+The workflow runs on pushes to `main`, builds the app, and deploys the generated `dist/` output to GitHub Pages.
 
-If you want to keep the process fully manual, you can also run the same steps by hand and use `dist/` as the published output.
+### GitHub Pages settings
+
+For the actions workflow, Pages will serve the site from the deployed artifact.
+- Branch: `gh-pages` (managed automatically by the workflow)
+- Folder: `/ (root)`
