@@ -27,10 +27,10 @@ This project is configured to publish as a GitHub Pages project site at `https:/
 
 A workflow is included at `.github/workflows/deploy.yml`.
 
-The workflow runs on pushes to `main`, builds the app, and deploys the generated `dist/` output to GitHub Pages.
+The workflow runs on pushes to `main`, builds the app, and deploys the generated `dist/` output to the `gh-pages` branch.
 
 ### GitHub Pages settings
 
-For the actions workflow, Pages will serve the site from the deployed artifact.
-- Branch: `gh-pages` (managed automatically by the workflow)
+If you use the actions workflow, configure Pages as follows:
+- Source: `gh-pages` branch
 - Folder: `/ (root)`
