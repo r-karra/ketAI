@@ -10,7 +10,7 @@ import StrangeWorks from "./pages/StrangeWorks";
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/ketAI">
       <div className="min-h-screen bg-white">
         <Navbar />
         <main>
